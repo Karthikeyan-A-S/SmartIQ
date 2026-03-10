@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════
-   GOOGLE FONTS — DM Serif Display + DM Sans + Space Mono
+   GOOGLE FONTS
    ════════════════════════════════════════ */
 @import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Mono:wght@400;700&display=swap");
 
@@ -125,7 +125,7 @@
 }
 
 /* ════════════════════════════════════════
-   RESET & BODY
+   RESET
    ════════════════════════════════════════ */
 *,
 *::before,
@@ -136,12 +136,10 @@
     color 0.3s ease,
     border-color 0.3s ease;
 }
-
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
 }
-
 body {
   font-family: "DM Sans", sans-serif;
   background: var(--bg-color);
@@ -152,11 +150,9 @@ body {
   overflow-x: hidden;
   line-height: 1.6;
 }
-
 body.fullscreen-active {
   overflow: hidden !important;
 }
-
 body::before {
   content: "";
   position: fixed;
@@ -166,7 +162,6 @@ body::before {
   pointer-events: none;
   z-index: 9999;
 }
-
 body::after {
   content: "";
   position: fixed;
@@ -190,7 +185,6 @@ h1 {
   color: var(--text-main);
   line-height: 1.2;
 }
-
 h2 {
   font-family: "DM Serif Display", serif;
   font-size: clamp(1rem, 2vw, 1.15rem);
@@ -200,14 +194,12 @@ h2 {
   padding-bottom: 12px;
   letter-spacing: -0.2px;
 }
-
 h3 {
   font-family: "DM Serif Display", serif;
   font-size: clamp(0.9rem, 1.8vw, 1rem);
   margin-top: 0;
   color: var(--info);
 }
-
 .subtitle {
   font-size: clamp(0.8rem, 1.8vw, 0.875rem);
   color: var(--text-muted);
@@ -224,7 +216,6 @@ h3 {
   position: relative;
   z-index: 1;
 }
-
 .container-wide {
   max-width: 1140px;
   width: 100%;
@@ -254,7 +245,6 @@ h3 {
     transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
     background-color 0.3s ease !important;
 }
-
 .navbar::after {
   content: "";
   position: absolute;
@@ -345,7 +335,7 @@ h3 {
   transition: all 0.2s ease;
 }
 .btn-icon:hover {
-  transform: scale(1.1) rotate(90deg);
+  transform: scale(1.08);
   background: var(--primary);
   color: white;
 }
@@ -431,6 +421,11 @@ h3 {
   display: flex;
   align-items: center;
 }
+.logout-react-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+} /* Keeps the react-icon aligned */
 
 /* 5. Theme Switch */
 .theme-switch-wrapper {
@@ -495,7 +490,7 @@ input:checked + .slider::before {
 }
 
 /* ════════════════════════════════════════
-   CARDS & CONTAINERS
+   CARDS & FORMS
    ════════════════════════════════════════ */
 .card {
   background: var(--surface-color);
@@ -506,11 +501,10 @@ input:checked + .slider::before {
   border: 1px solid var(--border-color);
   position: relative;
   overflow: hidden;
-  animation: cardReveal 0.45s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation: cardReveal 0.45s ease backwards;
   transition:
     box-shadow 0.25s ease,
-    transform 0.25s ease,
-    border-color 0.25s ease;
+    transform 0.25s ease;
 }
 .card:hover {
   box-shadow: var(--shadow-lg);
@@ -525,10 +519,6 @@ input:checked + .slider::before {
 .card:nth-child(3) {
   animation-delay: 0.14s;
 }
-.card:nth-child(4) {
-  animation-delay: 0.19s;
-}
-
 @keyframes cardReveal {
   from {
     opacity: 0;
@@ -539,7 +529,6 @@ input:checked + .slider::before {
     transform: translateY(0);
   }
 }
-
 .card::before {
   content: "";
   position: absolute;
@@ -624,20 +613,6 @@ input:checked + .slider::before {
     rgba(14, 165, 233, 0.05)
   );
 }
-
-/* ════════════════════════════════════════
-   FORMS & INPUTS
-   ════════════════════════════════════════ */
-.form-group {
-  margin-bottom: 16px;
-}
-label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-  font-size: 0.875rem;
-  color: var(--text-main);
-}
 .input-section {
   margin-bottom: 16px;
   padding: clamp(14px, 2vw, 18px);
@@ -680,7 +655,7 @@ label {
   font-size: clamp(0.85rem, 1.8vw, 0.95rem);
   color: var(--text-muted);
   border-radius: 8px;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.3s ease;
   margin: 0;
   white-space: nowrap;
   border: 1.5px solid transparent;
@@ -705,6 +680,16 @@ label {
   box-shadow: 0 4px 14px var(--info-glow);
 }
 
+.form-group {
+  margin-bottom: 16px;
+}
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text-main);
+}
 .radio-group,
 .checkbox-label {
   display: flex !important;
@@ -750,7 +735,7 @@ label {
   gap: 7px;
   padding: 9px 18px;
   border-radius: var(--radius-pill);
-  transition: all 0.25s cubic-bezier(0.34, 1.4, 0.64, 1);
+  transition: all 0.25s ease;
   white-space: nowrap;
 }
 .radio-group-box label.radio-group .pill-label::before {
@@ -858,7 +843,6 @@ button {
   font-size: clamp(0.85rem, 1.8vw, 0.93rem);
   font-weight: 600;
   font-family: "DM Sans", sans-serif;
-  letter-spacing: 0.2px;
   position: relative;
   overflow: hidden;
   transition:
@@ -1421,6 +1405,7 @@ button:active {
 .ts-page-hero {
   margin-bottom: clamp(16px, 2.5vw, 24px);
 }
+
 .ts-toolbar {
   display: flex;
   align-items: center;
@@ -1563,7 +1548,6 @@ button:active {
   box-shadow: var(--shadow-sm);
   position: relative;
   overflow: hidden;
-  animation: cardReveal 0.5s ease backwards;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -1697,31 +1681,6 @@ button:active {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-.chart-modal-close {
-  background: var(--surface-alt);
-  border: 1px solid var(--border-color);
-  color: var(--text-muted);
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 36px;
-  cursor: pointer;
-  padding: 0;
-  transition: all 0.22s ease;
-}
-.chart-modal-close:hover {
-  background: var(--danger-glow);
-  color: var(--danger);
-  border-color: var(--danger);
-  transform: scale(1.08) rotate(90deg);
-}
-.chart-modal-close svg {
-  pointer-events: none;
-  flex-shrink: 0;
 }
 .chart-modal-body {
   flex: 1;
@@ -1888,7 +1847,7 @@ body.modal-open {
   .navbar {
     flex-wrap: wrap;
     height: auto;
-    padding: 12px var(--page-pad);
+    padding: 10px var(--page-pad);
     gap: 12px 0;
     transform: translateY(0);
   }
@@ -1900,24 +1859,29 @@ body.modal-open {
   /* Row 1: Logo → Device → Theme */
   .nav-brand {
     order: 1;
-    margin-right: 10px;
-    flex-shrink: 0;
+    margin-right: 0;
+    flex: 0 0 auto;
   }
   .nav-brand-text {
-    display: block;
-    font-size: 1rem;
-  }
+    display: none;
+  } /* Hide "SmartIQ" on mobile */
+
   .device-selector {
     order: 2;
-    margin: 0 auto 0 0;
+    margin: 0 auto;
+    gap: 6px;
   }
   .device-selector select {
-    width: clamp(120px, 32vw, 180px);
-    font-size: 0.8rem;
+    width: clamp(110px, 30vw, 180px);
+    font-size: 0.82rem;
+    padding-left: 8px;
+    padding-right: 28px;
   }
+
   .theme-switch-wrapper {
     order: 3;
     margin: 0;
+    flex: 0 0 auto;
   }
 
   /* Divider Line */
@@ -1931,27 +1895,17 @@ body.modal-open {
   }
 
   /* Row 2: Pure Icon Buttons */
-  .nav-menu {
-    order: 5;
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    padding: 4px 0 8px;
-  }
-
   .nav-links {
-    flex: 0 0 auto;
-    justify-content: flex-start;
-    gap: 4px;
-    margin: 0;
+    order: 5;
+    margin-right: auto;
+    gap: 8px;
+    margin-left: 0;
   }
   .nav-right {
-    flex: 0 0 auto;
-    justify-content: flex-end;
-    margin: 0;
-    gap: 6px;
+    order: 6;
+    margin-left: auto;
+    gap: 8px;
+    margin-right: 0;
   }
 
   /* Hide all text inside the navbar */
@@ -1960,11 +1914,11 @@ body.modal-open {
     display: none !important;
   }
 
-  /* Perfect Square Icon Buttons */
+  /* Perfect Circle Icon Buttons */
   .nav-action-btn,
   .nav-links a {
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
     padding: 0;
     border-radius: 50%;
     justify-content: center;
@@ -1978,9 +1932,6 @@ body.modal-open {
     align-items: center;
     justify-content: center;
   }
-  .nav-brand-text {
-    display: none;
-  } /* Only show the Seed icon */
 }
 
 /* ════════════════════════════════════════
@@ -2023,16 +1974,15 @@ body.modal-open {
   /* Shrink buttons slightly more */
   .nav-action-btn,
   .nav-links a {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
   }
   .nav-icon,
   .nav-action-icon {
     font-size: 1.15rem;
   }
   .device-selector select {
-    max-width: 140px;
-    padding: 6px 26px 6px 10px;
+    width: clamp(90px, 25vw, 130px);
   }
   .btn-ts-refresh {
     width: 100%;
@@ -2075,8 +2025,27 @@ body.modal-open {
     width: 32px;
     height: 32px;
   }
-  .device-selector select {
-    width: clamp(100px, 40vw, 140px);
-    font-size: 0.76rem;
-  }
+}
+
+/* Fix for the Expanded Chart 'X' Button */
+.chart-modal-close {
+  background: var(--surface-alt) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-main) !important; 
+  width: 36px !important;              
+  height: 36px !important;             
+  min-width: 36px !important;          
+  flex: 0 0 36px !important;           
+  padding: 0 !important;               
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+}
+
+.chart-modal-close:hover {
+  background: var(--danger-glow) !important;
+  color: var(--danger) !important;
+  border-color: var(--danger) !important;
 }

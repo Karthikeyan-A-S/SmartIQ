@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { IoLogOutOutline } from "react-icons/io5"; // NEW ICON IMPORT
+import { IoLogOutOutline } from "react-icons/io5";
 
 export default function Navbar({
   devices,
@@ -34,7 +34,7 @@ export default function Navbar({
     }
   }, []);
 
-  // Scroll-hide for mobile
+  // Scroll-hide functionality
   useEffect(() => {
     let lastScrollY = window.scrollY;
     let ticking = false;
@@ -122,8 +122,8 @@ export default function Navbar({
         </button>
 
         <button onClick={onLogout} className="nav-action-btn nav-action-btn--logout" title="Logout">
-          <span className="nav-action-icon" style={{ display: 'flex', alignItems: 'center' }}>
-            <IoLogOutOutline size={20} />
+          <span className="nav-action-icon logout-react-icon">
+            <IoLogOutOutline size={22} />
           </span>
           <span className="nav-action-label">Logout</span>
         </button>

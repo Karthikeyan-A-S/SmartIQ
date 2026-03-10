@@ -73,7 +73,7 @@ export default function SettingsModal({
       <div className="settings-card">
         <div className="settings-header">
           <h2>⚙️ Setting</h2>
-          <button className="close-btn" onClick={onClose}>
+          <button className="modal-close-btn" onClick={onClose}>
             ✕
           </button>
         </div>
