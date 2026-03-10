@@ -7,8 +7,8 @@ import AddDeviceModal from "./components/AddDeviceModal";
 import SettingsModal from "./components/SettingsModal";
 import "./style.css";
 
-const RENDER_DOMAIN = "localhost:5000";
-const HTTP_URL = `http://${RENDER_DOMAIN}`;
+const RENDER_DOMAIN = "smartiq-backend.onrender.com";
+const HTTP_URL = `https://${RENDER_DOMAIN}`;
 const WS_URL = `ws://${RENDER_DOMAIN}`;
 
 export default function App() {
