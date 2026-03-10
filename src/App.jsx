@@ -7,7 +7,7 @@ import AddDeviceModal from "./components/AddDeviceModal";
 import SettingsModal from "./components/SettingsModal";
 import "./style.css";
 
-const RENDER_DOMAIN = "smartiq-backend.onrender.com";
+const RENDER_DOMAIN = "smartiqbackend-production.up.railway.app";
 const HTTP_URL = `https://${RENDER_DOMAIN}`;
 const WS_URL = `ws://${RENDER_DOMAIN}`;
 
