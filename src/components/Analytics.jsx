@@ -4,102 +4,111 @@ import {
   LineElement, Title, Tooltip, Legend, Filler
 } from "chart.js";
 import { Line } from "react-chartjs-2";
-
+ 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
-
+ 
 export default function Analytics({ activeDevice }) {
   const [results, setResults] = useState(60);
   const [chartData, setChartData] = useState(null);
   const [latestStats, setLatestStats] = useState({ temp: null, hum: null, soil: null, pump: null });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  
-  // NEW: State to hold the actively zoomed chart data
   const [zoomedChart, setZoomedChart] = useState(null);
-
-  const fetchData = async () => {
+ 
+  // FIX: Accept an AbortSignal so the useEffect cleanup can cancel in-flight
+  // fetches when the component unmounts or deps change, preventing setState
+  // calls on an unmounted component.
+  const fetchData = async (signal) => {
     if (!activeDevice?.thinkspeakChannel || !activeDevice?.thinkspeakReadKey) {
       setError("Active device is missing ThingSpeak credentials.");
       setIsLoading(false);
       return;
     }
-
+ 
     setIsLoading(true);
     setError("");
-    
+ 
     try {
       const url = `https://api.thingspeak.com/channels/${activeDevice.thinkspeakChannel}/feeds.json?api_key=${activeDevice.thinkspeakReadKey}&results=${results}`;
-      const res = await fetch(url);
-      
+      const res = await fetch(url, { signal });
+ 
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const json = await res.json();
       const feeds = json.feeds;
-
+ 
       const labels = feeds.map(f => {
         const d = new Date(f.created_at);
         return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
       });
-
+ 
       const getField = (n) => feeds.map(e => e[`field${n}`] ? parseFloat(e[`field${n}`]) : null);
-
+ 
       setChartData({
         labels,
         temp: getField(1), hum: getField(2), soil: getField(3),
         sal: getField(4), pump: getField(5), vol: getField(6)
       });
-
+ 
       const latest = (arr) => [...arr].reverse().find(v => v !== null && !isNaN(v));
-      
+ 
       setLatestStats({
         temp: latest(getField(1)),
         hum: latest(getField(2)),
         soil: latest(getField(3)),
         pump: latest(getField(5))
       });
-
+ 
     } catch (err) {
+      // FIX: Ignore AbortError — it's not a real error, just cleanup
+      if (err.name === "AbortError") return;
       setError("Failed to fetch from ThingSpeak. Please check your API key.");
     } finally {
       setIsLoading(false);
     }
   };
-
+ 
   useEffect(() => {
-    fetchData();
+    // FIX: Create an AbortController per effect run. On cleanup (unmount or
+    // dep change), abort the fetch so no stale setState calls fire.
+    const controller = new AbortController();
+    fetchData(controller.signal);
+    return () => controller.abort();
   }, [activeDevice, results]);
-
+ 
   return (
     <div className="container-wide">
       <div className="ts-page-hero">
         <h1>📊 Farm Analytics</h1>
         <p>Live sensor data from ThingSpeak — visualised in real time.</p>
       </div>
-
+ 
       <div className="ts-toolbar">
         <div className="ts-toolbar-left">
           <span className="ts-channel-pill">📡 Channel #{activeDevice?.thinkspeakChannel || "Unknown"}</span>
           <label>Points:</label>
-          <select value={results} onChange={(e) => setResults(e.target.value)}>
-            <option value="30">30</option>
-            <option value="60">60</option>
-            <option value="100">100</option>
+          {/* FIX: Convert select value to Number so results is always numeric */}
+          <select value={results} onChange={(e) => setResults(Number(e.target.value))}>
+            <option value={30}>30</option>
+            <option value={60}>60</option>
+            <option value={100}>100</option>
           </select>
         </div>
-        <button className="btn-ts-refresh" onClick={fetchData}>
+        {/* Manual refresh: create a fresh controller for one-off fetches */}
+        <button className="btn-ts-refresh" onClick={() => fetchData(new AbortController().signal)}>
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
           Refresh Data
         </button>
       </div>
-
+ 
       {error && <div className="ts-error" style={{ display: "block" }}>{error}</div>}
-      
+ 
       {isLoading && (
         <div className="ts-loading">
           <div><span className="ts-loading-dot"></span><span className="ts-loading-dot"></span><span className="ts-loading-dot"></span></div>
           <p style={{ marginTop: '14px', fontSize: '0.9rem' }}>Fetching data from ThingSpeak…</p>
         </div>
       )}
-
+ 
       {!isLoading && chartData && (
         <>
           <div className="ts-stats-row">
@@ -108,7 +117,7 @@ export default function Analytics({ activeDevice }) {
             <div className="ts-stat-box"><div className="ts-stat-label">🌱 Soil</div><div className={`ts-stat-val ${latestStats.soil === 1 ? 'dry' : 'wet'}`}>{latestStats.soil === 1 ? 'Dry' : (latestStats.soil === 0 ? 'Wet' : '—')}</div></div>
             <div className="ts-stat-box"><div className="ts-stat-label">⚙️ Pump</div><div className={`ts-stat-val ${latestStats.pump === 1 ? 'pump-on' : 'pump-off'}`}>{latestStats.pump === 1 ? 'ON' : (latestStats.pump === 0 ? 'OFF' : '—')}</div></div>
           </div>
-
+ 
           <div className="ts-charts-grid">
             <ChartCard title="Temperature" color="#ef4444" labels={chartData.labels} data={chartData.temp} fill onZoom={() => setZoomedChart({ title: "Temperature", color: "#ef4444", data: chartData.temp, labels: chartData.labels, fill: true })} />
             <ChartCard title="Humidity" color="#0ea5e9" labels={chartData.labels} data={chartData.hum} fill onZoom={() => setZoomedChart({ title: "Humidity", color: "#0ea5e9", data: chartData.hum, labels: chartData.labels, fill: true })} />
@@ -119,8 +128,7 @@ export default function Analytics({ activeDevice }) {
           </div>
         </>
       )}
-
-      {/* MODAL RENDER LOGIC */}
+ 
       {zoomedChart && (
         <div className="chart-modal-overlay" onClick={() => setZoomedChart(null)}>
           <div className="chart-modal-content" onClick={e => e.stopPropagation()}>
@@ -131,14 +139,14 @@ export default function Analytics({ activeDevice }) {
               </button>
             </div>
             <div className="chart-modal-body">
-              <ChartCard 
-                title="" 
-                color={zoomedChart.color} 
-                labels={zoomedChart.labels} 
-                data={zoomedChart.data} 
-                fill={zoomedChart.fill} 
-                stepped={zoomedChart.stepped} 
-                isModal={true} 
+              <ChartCard
+                title=""
+                color={zoomedChart.color}
+                labels={zoomedChart.labels}
+                data={zoomedChart.data}
+                fill={zoomedChart.fill}
+                stepped={zoomedChart.stepped}
+                isModal={true}
               />
             </div>
           </div>
@@ -147,34 +155,34 @@ export default function Analytics({ activeDevice }) {
     </div>
   );
 }
-
+ 
 function ChartCard({ title, color, labels, data, fill, stepped, onZoom, isModal }) {
   const lineData = {
     labels,
     datasets: [{
-      label: title, 
-      data, 
+      label: title,
+      data,
       borderColor: color,
       backgroundColor: fill ? `${color}33` : 'transparent',
-      fill: fill, 
-      tension: 0.35, 
+      fill: fill,
+      tension: 0.35,
       stepped: stepped,
-      borderWidth: 2, 
+      borderWidth: 2,
       pointRadius: isModal ? 3 : 2,
       pointHoverRadius: 6
     }]
   };
-
+ 
   const lineOptions = {
-    responsive: true, 
-    maintainAspectRatio: false, 
+    responsive: true,
+    maintainAspectRatio: false,
     plugins: { legend: { display: false } },
     scales: {
       x: { grid: { display: false } },
       y: { grid: { color: "rgba(100, 116, 139, 0.1)" } }
     }
   };
-
+ 
   return (
     <div className={isModal ? "" : "ts-chart-card"} style={isModal ? { height: '100%', display: 'flex', flexDirection: 'column' } : {}}>
       {!isModal && (

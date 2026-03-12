@@ -6,11 +6,12 @@ import Analytics from "./components/Analytics";
 import AddDeviceModal from "./components/AddDeviceModal";
 import SettingsModal from "./components/SettingsModal";
 import "./style.css";
-
-const RENDER_DOMAIN = "smartiq-backend.onrender.com";
-const HTTP_URL = `https://${RENDER_DOMAIN}`;
-const WS_URL = `wss://${RENDER_DOMAIN}`;
-
+ 
+// const RENDER_DOMAIN = "smartiq-backend.onrender.com";
+const RENDER_DOMAIN = "localhost:5000"
+const HTTP_URL = `http://${RENDER_DOMAIN}`;
+const WS_URL = `ws://${RENDER_DOMAIN}`;
+ 
 export default function App() {
   const [token, setToken] = useState(
     localStorage.getItem("smartiq_jwt") || null,
@@ -22,12 +23,18 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [sensorData, setSensorData] = useState({});
   const [isCloudOnline, setIsCloudOnline] = useState(false);
-
-  // NEW: State for Custom Crops
   const [customCrops, setCustomCrops] = useState([]);
-
+ 
   const ws = useRef(null);
-
+ 
+  // FIX: Use a ref to track activeDevice inside the WS onmessage closure.
+  // Without this, onmessage captures a stale value of activeDevice from when
+  // the effect first ran, so switching devices never updated the sensor feed.
+  const activeDeviceRef = useRef(activeDevice);
+  useEffect(() => {
+    activeDeviceRef.current = activeDevice;
+  }, [activeDevice]);
+ 
   const fetchDevices = async () => {
     if (!token) return;
     try {
@@ -42,8 +49,7 @@ export default function App() {
       console.error("Failed to fetch devices", err);
     }
   };
-
-  // NEW: Fetch crops function
+ 
   const fetchCrops = async () => {
     if (!token) return;
     try {
@@ -58,12 +64,12 @@ export default function App() {
       console.error("Failed to fetch crops", err);
     }
   };
-
+ 
   useEffect(() => {
     fetchDevices();
-    fetchCrops(); // Load crops on mount
+    fetchCrops();
   }, [token]);
-
+ 
   useEffect(() => {
     if (!token) return;
     const connectWS = () => {
@@ -71,10 +77,12 @@ export default function App() {
       ws.current.onopen = () => setIsCloudOnline(true);
       ws.current.onmessage = (event) => {
         const message = JSON.parse(event.data);
+        // FIX: Read activeDevice from the ref so we always have the latest
+        // value, even after the user has switched devices.
         if (
           message.type === "sensor_update" &&
-          activeDevice &&
-          message.deviceId === activeDevice.id
+          activeDeviceRef.current &&
+          message.deviceId === activeDeviceRef.current.id
         ) {
           setSensorData(message.data);
         }
@@ -84,16 +92,19 @@ export default function App() {
         setTimeout(connectWS, 4000);
       };
     };
-
+ 
     connectWS();
     return () => ws.current?.close();
-  }, [token, activeDevice]);
-
+    // FIX: Removed activeDevice from the dependency array. Previously, every
+    // device switch caused the WebSocket to disconnect and reconnect
+    // unnecessarily. The ref above handles reading the latest device instead.
+  }, [token]);
+ 
   const handleLogin = (jwt) => {
     localStorage.setItem("smartiq_jwt", jwt);
     setToken(jwt);
   };
-
+ 
   const handleLogout = () => {
     localStorage.removeItem("smartiq_jwt");
     setToken(null);
@@ -102,7 +113,7 @@ export default function App() {
     setActiveDevice(null);
     ws.current?.close();
   };
-
+ 
   const sendCommand = (mode, payload = {}) => {
     if (!activeDevice) return alert("Select a device first.");
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
@@ -117,9 +128,9 @@ export default function App() {
       alert("Cloud connection is offline.");
     }
   };
-
+ 
   if (!token) return <AuthScreen onLogin={handleLogin} httpUrl={HTTP_URL} />;
-
+ 
   return (
     <div id="appScreen">
       <Navbar
@@ -132,21 +143,21 @@ export default function App() {
         onAddDevice={() => setShowAddModal(true)}
         onOpenSettings={() => setShowSettings(true)}
       />
-
+ 
       {currentView === "dashboard" ? (
         <Dashboard
           sensorData={sensorData}
           isCloudOnline={isCloudOnline}
           sendCommand={sendCommand}
-          customCrops={customCrops} // Passed to Dashboard
-          refreshCrops={fetchCrops} // Passed to Dashboard
-          token={token} // Passed to Dashboard
-          httpUrl={HTTP_URL} // Passed to Dashboard
+          customCrops={customCrops}
+          refreshCrops={fetchCrops}
+          token={token}
+          httpUrl={HTTP_URL}
         />
       ) : (
         <Analytics activeDevice={activeDevice} />
       )}
-
+ 
       {showAddModal && (
         <AddDeviceModal
           onClose={() => setShowAddModal(false)}

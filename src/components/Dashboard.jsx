@@ -1,101 +1,18 @@
 import React, { useState, useEffect } from "react";
-import AddCropModal from "./AddCropModal"; // Import the new modal
-
+import AddCropModal from "./AddCropModal";
+ 
 const cropData = {
   tomato: { dripDuration: 45, surfaceQuantity: 4.0, surfaceDuration: 20 },
   banana: { dripDuration: 90, surfaceQuantity: 12.0, surfaceDuration: 40 },
   mango: { dripDuration: 120, surfaceQuantity: 25.0, surfaceDuration: 60 },
   coconut: { dripDuration: 150, surfaceQuantity: 40.0, surfaceDuration: 90 },
 };
-
-// Accept the new props!
-export default function Dashboard({ sensorData, isCloudOnline, sendCommand, customCrops, refreshCrops, token, httpUrl }) {
-  const [salinityInput, setSalinityInput] = useState("");
-  const [currentSalinity, setCurrentSalinity] = useState(null);
-  const [masterMode, setMasterMode] = useState("manual");
-  
-  const [autoPlantType, setAutoPlantType] = useState("none");
-  const [autoMethod, setAutoMethod] = useState("drip");
-  
-  const [manualMode, setManualMode] = useState("none");
-  const [plantDataset, setPlantDataset] = useState("none");
-  
-  const [dripStartNow, setDripStartNow] = useState(true);
-  const [dripStartTime, setDripStartTime] = useState("");
-  const [dripDuration, setDripDuration] = useState(30);
-
-  const [surfaceControl, setSurfaceControl] = useState("volume");
-  const [surfaceQuantity, setSurfaceQuantity] = useState(5.0);
-  const [surfaceStartNow, setSurfaceStartNow] = useState(true);
-  const [surfaceStartTime, setSurfaceStartTime] = useState("");
-  const [surfaceDuration, setSurfaceDuration] = useState(30);
-
-  const [overrideSpeed, setOverrideSpeed] = useState(100);
-  
-  // NEW: Modal State
-  const [showCropModal, setShowCropModal] = useState(false);
-
-  const getSalinityInfo = (ec) => {
-    if (ec === null) return null;
-    if (ec < 1.5) return { level: "normal", label: "✅ Normal", cls: "sal-normal", factor: 1.0, dripAdj: 0 };
-    if (ec < 3.0) return { level: "moderate", label: "⚠️ Moderate", cls: "sal-moderate", factor: 0.85, dripAdj: -8 };
-    return { level: "high", label: "🔴 High", cls: "sal-high", factor: 0.65, dripAdj: -15 };
-  };
-  const salInfo = getSalinityInfo(currentSalinity);
-
-  const handleSetSalinity = () => {
-    const val = parseFloat(salinityInput);
-    if (!isNaN(val) && val >= 0 && val <= 20) setCurrentSalinity(val);
-    else alert("Enter a valid EC value (0–20 mS/cm)");
-  };
-
-  // Automatically apply parameters when a plant is selected
-  useEffect(() => {
-    if (plantDataset === "none") return;
-    
-    let data;
-    // Check if it is a cloud-based custom crop
-    if (plantDataset.startsWith("custom_")) {
-      const cropId = plantDataset.replace("custom_", "");
-      data = customCrops.find((c) => c._id === cropId);
-    } else {
-      // Or fallback to default hardcoded crops
-      data = cropData[plantDataset];
-    }
-
-    if (data) {
-      if (manualMode === "drip") {
-        setDripDuration(data.dripDuration);
-      } else if (manualMode === "surface") {
-        if (surfaceControl === "volume") setSurfaceQuantity(data.surfaceQuantity);
-        else setSurfaceDuration(data.surfaceDuration);
-      }
-    }
-  }, [plantDataset, manualMode, surfaceControl, customCrops]);
-
-  const handleAutoSubmit = (e) => {
-    e.preventDefault();
-    if (autoPlantType === "none") return alert("Please select a plant type.");
-    sendCommand("AUTO", { treeType: autoPlantType, irrigationMethod: autoMethod, salinity: currentSalinity });
-  };
-
-  const handleDripSubmit = (e) => {
-    e.preventDefault();
-    sendCommand("DRIP", { startTime: dripStartNow ? "NOW" : dripStartTime, duration: dripDuration, salinity: currentSalinity });
-  };
-
-  const handleSurfaceSubmit = (e) => {
-    e.preventDefault();
-    let payload = { controlType: surfaceControl, salinity: currentSalinity };
-    if (surfaceControl === "volume") payload.quantity = surfaceQuantity;
-    else { payload.startTime = surfaceStartNow ? "NOW" : surfaceStartTime; payload.duration = surfaceDuration; }
-    sendCommand("SURFACE", payload);
-  };
-
-  const isDry = sensorData.soilMoisture?.toLowerCase() === "dry";
-
-  // Reusable component to render the dynamic options
-  const CropDropdownOptions = () => (
+ 
+// FIX: Moved CropDropdownOptions outside the parent component.
+// Defining it inside caused React to treat it as a brand-new component type on
+// every render, triggering unnecessary unmount/remount of the <select> options.
+function CropDropdownOptions({ customCrops }) {
+  return (
     <>
       <option value="none">— Select a Plant / Tree —</option>
       <optgroup label="Default Plants">
@@ -113,7 +30,101 @@ export default function Dashboard({ sensorData, isCloudOnline, sendCommand, cust
       )}
     </>
   );
-
+}
+ 
+export default function Dashboard({ sensorData, isCloudOnline, sendCommand, customCrops, refreshCrops, token, httpUrl }) {
+  const [salinityInput, setSalinityInput] = useState("");
+  const [currentSalinity, setCurrentSalinity] = useState(null);
+  const [masterMode, setMasterMode] = useState("manual");
+ 
+  const [autoPlantType, setAutoPlantType] = useState("none");
+  const [autoMethod, setAutoMethod] = useState("drip");
+ 
+  const [manualMode, setManualMode] = useState("none");
+  const [plantDataset, setPlantDataset] = useState("none");
+ 
+  const [dripStartNow, setDripStartNow] = useState(true);
+  const [dripStartTime, setDripStartTime] = useState("");
+  const [dripDuration, setDripDuration] = useState(30);
+ 
+  const [surfaceControl, setSurfaceControl] = useState("volume");
+  const [surfaceQuantity, setSurfaceQuantity] = useState(5.0);
+  const [surfaceStartNow, setSurfaceStartNow] = useState(true);
+  const [surfaceStartTime, setSurfaceStartTime] = useState("");
+  const [surfaceDuration, setSurfaceDuration] = useState(30);
+ 
+  const [overrideSpeed, setOverrideSpeed] = useState(100);
+ 
+  const [showCropModal, setShowCropModal] = useState(false);
+ 
+  const getSalinityInfo = (ec) => {
+    if (ec === null) return null;
+    if (ec < 1.5) return { level: "normal", label: "✅ Normal", cls: "sal-normal", factor: 1.0, dripAdj: 0 };
+    if (ec < 3.0) return { level: "moderate", label: "⚠️ Moderate", cls: "sal-moderate", factor: 0.85, dripAdj: -8 };
+    return { level: "high", label: "🔴 High", cls: "sal-high", factor: 0.65, dripAdj: -15 };
+  };
+  const salInfo = getSalinityInfo(currentSalinity);
+ 
+  const handleSetSalinity = () => {
+    const val = parseFloat(salinityInput);
+    if (!isNaN(val) && val >= 0 && val <= 20) setCurrentSalinity(val);
+    else alert("Enter a valid EC value (0–20 mS/cm)");
+  };
+ 
+  useEffect(() => {
+    if (plantDataset === "none") return;
+ 
+    let data;
+    if (plantDataset.startsWith("custom_")) {
+      const cropId = plantDataset.replace("custom_", "");
+      data = customCrops.find((c) => c._id === cropId);
+    } else {
+      data = cropData[plantDataset];
+    }
+ 
+    if (data) {
+      if (manualMode === "drip") {
+        setDripDuration(data.dripDuration);
+      } else if (manualMode === "surface") {
+        if (surfaceControl === "volume") setSurfaceQuantity(data.surfaceQuantity);
+        else setSurfaceDuration(data.surfaceDuration);
+      }
+    }
+  }, [plantDataset, manualMode, surfaceControl, customCrops]);
+ 
+  const handleAutoSubmit = (e) => {
+    e.preventDefault();
+    if (autoPlantType === "none") return alert("Please select a plant type.");
+    sendCommand("AUTO", { treeType: autoPlantType, irrigationMethod: autoMethod, salinity: currentSalinity });
+  };
+ 
+  const handleDripSubmit = (e) => {
+    e.preventDefault();
+    // FIX: Input values from <input type="number"> are strings — convert to
+    // Number before sending so the Pi receives numeric types, not "30".
+    sendCommand("DRIP", {
+      startTime: dripStartNow ? "NOW" : dripStartTime,
+      duration: Number(dripDuration),
+      salinity: currentSalinity,
+    });
+  };
+ 
+  const handleSurfaceSubmit = (e) => {
+    e.preventDefault();
+    let payload = { controlType: surfaceControl, salinity: currentSalinity };
+    if (surfaceControl === "volume") {
+      // FIX: Same string-to-number conversion for surface quantity
+      payload.quantity = Number(surfaceQuantity);
+    } else {
+      payload.startTime = surfaceStartNow ? "NOW" : surfaceStartTime;
+      // FIX: Same string-to-number conversion for surface duration
+      payload.duration = Number(surfaceDuration);
+    }
+    sendCommand("SURFACE", payload);
+  };
+ 
+  const isDry = sensorData.soilMoisture?.toLowerCase() === "dry";
+ 
   return (
     <div className="container">
       {/* 1. Live Conditions */}
@@ -138,7 +149,7 @@ export default function Dashboard({ sensorData, isCloudOnline, sendCommand, cust
         </div>
         {isDry && masterMode === "manual" && <p className="live-warning">⚠️ Alert: Soil moisture is critically low! Manual irrigation required.</p>}
       </div>
-
+ 
       {/* 2. Salinity Config */}
       <div className="card salinity-card">
         <div className="card-header">
@@ -150,7 +161,7 @@ export default function Dashboard({ sensorData, isCloudOnline, sendCommand, cust
           <input type="number" step="0.1" min="0" max="20" value={salinityInput} onChange={(e) => setSalinityInput(e.target.value)} placeholder="e.g. 1.2" />
         </div>
         <button className="btn-salinity" onClick={handleSetSalinity}>Set Salinity Value</button>
-
+ 
         {salInfo && (
           <div className="salinity-info-panel">
             <div className="sal-ec-display"><span className="sal-ec-label">EC Reading</span><span className="sal-ec-value">{currentSalinity.toFixed(2)} mS/cm</span></div>
@@ -161,7 +172,7 @@ export default function Dashboard({ sensorData, isCloudOnline, sendCommand, cust
           </div>
         )}
       </div>
-
+ 
       {/* 3. Master Mode Toggle */}
       <div className="card">
         <h2>🎛️ Operation Mode</h2>
@@ -172,7 +183,7 @@ export default function Dashboard({ sensorData, isCloudOnline, sendCommand, cust
           <label htmlFor="modeAuto">🤖 Auto-Pilot</label>
         </div>
       </div>
-
+ 
       {/* 4. Auto Mode View */}
       {masterMode === "auto" && (
         <div className="card auto-card">
@@ -182,7 +193,7 @@ export default function Dashboard({ sensorData, isCloudOnline, sendCommand, cust
               <label>Select Tree / Plant Type:</label>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <select value={autoPlantType} onChange={(e) => setAutoPlantType(e.target.value)} style={{ flex: 1 }}>
-                  <CropDropdownOptions />
+                  <CropDropdownOptions customCrops={customCrops} />
                 </select>
                 <button type="button" className="btn-secondary" style={{ flex: '0 0 auto', padding: '10px 14px' }} onClick={() => setShowCropModal(true)}>+ Add</button>
               </div>
@@ -201,7 +212,7 @@ export default function Dashboard({ sensorData, isCloudOnline, sendCommand, cust
           </form>
         </div>
       )}
-
+ 
       {/* 5. Manual Mode View */}
       {masterMode === "manual" && (
         <>
@@ -213,20 +224,20 @@ export default function Dashboard({ sensorData, isCloudOnline, sendCommand, cust
               <option value="surface">🌊 Surface Irrigation</option>
             </select>
           </div>
-
+ 
           {manualMode !== "none" && (
             <div className="card smart-guide">
               <h3>💡 Smart Assistant</h3>
               <p className="subtitle">Select a plant type and we'll auto-fill the optimal settings for you.</p>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <select value={plantDataset} onChange={(e) => setPlantDataset(e.target.value)} style={{ flex: 1 }}>
-                  <CropDropdownOptions />
+                  <CropDropdownOptions customCrops={customCrops} />
                 </select>
                 <button type="button" className="btn-secondary" style={{ flex: '0 0 auto', padding: '10px 14px' }} onClick={() => setShowCropModal(true)}>+ Add</button>
               </div>
             </div>
           )}
-
+ 
           {manualMode === "drip" && (
             <div className="card">
               <h2>💧 Step 2: Drip Mode</h2>
@@ -240,7 +251,7 @@ export default function Dashboard({ sensorData, isCloudOnline, sendCommand, cust
               </form>
             </div>
           )}
-
+ 
           {manualMode === "surface" && (
             <div className="card">
               <h2>🌊 Step 2: Surface Mode</h2>
@@ -265,7 +276,7 @@ export default function Dashboard({ sensorData, isCloudOnline, sendCommand, cust
           )}
         </>
       )}
-
+ 
       {/* 6. Emergency Override */}
       <div className="card override-card">
         <h2>🚨 Emergency Override</h2>
@@ -278,20 +289,19 @@ export default function Dashboard({ sensorData, isCloudOnline, sendCommand, cust
           <button className="btn-danger" onClick={() => sendCommand("OVERRIDE", { state: "OFF" })}>⛔ FORCE PUMP OFF</button>
         </div>
       </div>
-
-      {/* NEW: Render the Add Crop Modal when triggered */}
+ 
       {showCropModal && (
-        <AddCropModal 
-          onClose={() => setShowCropModal(false)} 
-          token={token} 
-          httpUrl={httpUrl} 
-          refreshCrops={refreshCrops} 
+        <AddCropModal
+          onClose={() => setShowCropModal(false)}
+          token={token}
+          httpUrl={httpUrl}
+          refreshCrops={refreshCrops}
         />
       )}
     </div>
   );
 }
-
+ 
 function SensorBox({ label, value }) {
   return (
     <div className="sensor-box">
