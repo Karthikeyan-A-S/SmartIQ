@@ -1,5 +1,7 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { IoLogOutOutline } from "react-icons/io5";
+import { MdContentCopy } from "react-icons/md"; // Imported the copy icon
+import { TiTick } from "react-icons/ti";
 
 export default function Navbar({
   devices,
@@ -12,10 +14,19 @@ export default function Navbar({
   onOpenSettings,
 }) {
   const navRef = useRef(null);
+  const [copied, setCopied] = useState(false); // State to track copy feedback
 
   const handleDeviceChange = (e) => {
     const selected = devices.find((d) => d.id === e.target.value);
     setActiveDevice(selected);
+  };
+
+  const copyDeviceId = () => {
+    if (activeDevice?.id) {
+      navigator.clipboard.writeText(activeDevice.id);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000); // Revert icon after 2 seconds
+    }
   };
 
   const toggleTheme = (e) => {
@@ -80,6 +91,18 @@ export default function Navbar({
             </option>
           ))}
         </select>
+        
+        {/* Copy Device ID Button */}
+        {activeDevice && (
+          <button 
+            className="btn-icon" 
+            onClick={copyDeviceId} 
+            title={copied ? "Copied!" : "Copy Device ID"}
+          >
+            {copied ? <TiTick style={{color:'green',fontSize:'22px'}}/> : <MdContentCopy size={16} />}
+          </button>
+        )}
+
         <button className="btn-icon" onClick={onAddDevice} title="Add Device">
           ➕
         </button>

@@ -1315,16 +1315,25 @@ button:active {
 .settings-item strong {
   color: var(--text-main);
 }
-.btn-unlink {
+.btn-unlink,.btn-device-edit {
   width: 100%;
-  background: var(--cancel);
   color: white;
   margin-top: 12px;
   font-weight: 600;
 }
-.btn-unlink:hover {
+.btn-unlink{
+  background: var(--cancel);
+}
+.btn-unlink:hover{
   background: var(--cancel-hover);
   transform: translateY(-1px);
+}
+.btn-device-edit{
+  background: var(--primary);
+}
+.btn-device-edit:hover{
+  transform: translateY(-1px);
+  background: var(--info);
 }
 
 .danger-zone {
@@ -2106,4 +2115,20 @@ body.modal-open {
   color: var(--primary);
   letter-spacing: 2px;
   font-family: "Space Mono", monospace;
+}
+/* ════════════════════════════════════════
+   SETTINGS MODAL SPECIFIC STYLES
+   ════════════════════════════════════════ */
+.device-id-text {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin: 0 0 12px 0;
+}
+
+.edit-device-form {
+  margin-top: 14px;
+}
+
+.btn-permanent-delete {
+  margin-bottom: 14px;
 }

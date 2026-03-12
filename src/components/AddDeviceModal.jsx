@@ -88,7 +88,7 @@ export default function AddDeviceModal({ onClose, token, httpUrl, refreshDevices
             className={`modal-tab-btn ${tab === 'new' ? 'active' : ''}`}
             onClick={() => setTab('new')}
           >
-            Create New Device
+            New Device
           </button>
           <button 
             className={`modal-tab-btn ${tab === 'existing' ? 'active' : ''}`}
