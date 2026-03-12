@@ -2051,3 +2051,59 @@ body.modal-open {
   color: var(--danger) !important;
   border-color: var(--danger) !important;
 }
+/* ════════════════════════════════════════
+   DEVICE MODAL SPECIFIC STYLES
+   ════════════════════════════════════════ */
+.text-center {
+  text-align: center;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.modal-tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.modal-tab-btn {
+  flex: 1;
+  padding: 12px 10px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: -2px; /* Overlaps the container border seamlessly */
+}
+
+.modal-tab-btn:hover {
+  color: var(--primary);
+  background: var(--nav-link-hover-bg);
+}
+
+.modal-tab-btn.active {
+  color: var(--primary);
+  font-weight: 700;
+  border-bottom: 2px solid var(--primary);
+}
+
+.success-id-box {
+  background: var(--surface-alt);
+  padding: 18px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--primary);
+  margin: 20px 0;
+}
+
+.success-id-text {
+  margin: 0;
+  color: var(--primary);
+  letter-spacing: 2px;
+  font-family: "Space Mono", monospace;
+}
