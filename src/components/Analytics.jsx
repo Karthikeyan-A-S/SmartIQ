@@ -165,6 +165,7 @@ export default function Analytics({ activeDevice }) {
 
       {!isLoading && chartData && (
         <>
+          <h3 style={{ margin: '10px 0 14px 0', color: 'var(--text-main)' }}>Last Values</h3>
           <div className="ts-stats-row">
             <div className="ts-stat-box"><div className="ts-stat-label">🌡️ Temp</div><div className="ts-stat-val">{latestStats.temp !== undefined ? `${latestStats.temp}°C` : '—'}</div></div>
             <div className="ts-stat-box"><div className="ts-stat-label">💧 Humidity</div><div className="ts-stat-val">{latestStats.hum !== undefined ? `${latestStats.hum}%` : '—'}</div></div>
