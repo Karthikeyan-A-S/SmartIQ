@@ -1315,16 +1315,25 @@ button:active {
 .settings-item strong {
   color: var(--text-main);
 }
-.btn-unlink {
+.btn-unlink,.btn-device-edit {
   width: 100%;
-  background: var(--cancel);
   color: white;
   margin-top: 12px;
   font-weight: 600;
 }
-.btn-unlink:hover {
+.btn-unlink{
+  background: var(--cancel);
+}
+.btn-unlink:hover{
   background: var(--cancel-hover);
   transform: translateY(-1px);
+}
+.btn-device-edit{
+  background: var(--primary);
+}
+.btn-device-edit:hover{
+  transform: translateY(-1px);
+  background: var(--info);
 }
 
 .danger-zone {
@@ -1951,12 +1960,14 @@ body.modal-open {
     grid-template-columns: repeat(2, 1fr);
   }
   .radio-group-box {
+    border-radius: 12px;
     flex-direction: column;
     width: 100%;
     align-items: stretch;
   }
   .radio-group-box label.radio-group .pill-label {
     width: 100%;
+    border-radius: 12px;
     justify-content: flex-start;
   }
   .btn-group,
@@ -2048,4 +2059,380 @@ body.modal-open {
   background: var(--danger-glow) !important;
   color: var(--danger) !important;
   border-color: var(--danger) !important;
+}
+/* ════════════════════════════════════════
+   DEVICE MODAL SPECIFIC STYLES
+   ════════════════════════════════════════ */
+.text-center {
+  text-align: center;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.modal-tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.modal-tab-btn {
+  flex: 1;
+  padding: 12px 10px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: -2px; /* Overlaps the container border seamlessly */
+}
+
+.modal-tab-btn:hover {
+  color: var(--primary);
+  background: var(--nav-link-hover-bg);
+}
+
+.modal-tab-btn.active {
+  color: var(--primary);
+  font-weight: 700;
+  border-bottom: 2px solid var(--primary);
+}
+
+.success-id-box {
+  background: var(--surface-alt);
+  padding: 18px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--primary);
+  margin: 20px 0;
+}
+
+.success-id-text {
+  margin: 0;
+  color: var(--primary);
+  letter-spacing: 2px;
+  font-family: "Space Mono", monospace;
+}
+/* ════════════════════════════════════════
+   SETTINGS MODAL SPECIFIC STYLES
+   ════════════════════════════════════════ */
+.device-id-text {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin: 0 0 12px 0;
+}
+
+.edit-device-form {
+  margin-top: 14px;
+}
+
+.btn-permanent-delete {
+  margin-bottom: 14px;
+}
+
+/* ════════════════════════════════════════
+   ANALYTICS TOOLBAR RESPONSIVE LAYOUT
+   ════════════════════════════════════════ */
+
+.ts-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 12px 16px;
+}
+
+.ts-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0; /* Prevent overflow */
+}
+
+.ts-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+/* ── Channel Pill ── */
+.ts-channel-pill {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Points Group ── */
+.ts-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ts-toolbar-group label {
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+
+.ts-toolbar-group select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border-color);
+  background: var(--input-bg);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+/* ── Date Fields ── */
+.ts-toolbar-dates {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.date-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-field label {
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+
+.date-field input[type="date"] {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border-color);
+  background: var(--input-bg);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.85rem;
+  min-width: 130px;
+}
+
+/* ════════════════════════════════════════
+   TABLET  (max 1024px)
+   ════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .ts-toolbar {
+    gap: 12px;
+  }
+
+  .ts-toolbar-left {
+    gap: 10px;
+  }
+
+  .date-field input[type="date"] {
+    min-width: 120px;
+  }
+}
+
+/* ════════════════════════════════════════
+   SMALL TABLET / LARGE PHONE  (max 768px)
+   ════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .ts-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 12px;
+  }
+
+  .ts-toolbar-left {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .ts-toolbar-right {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 10px;
+  }
+
+  /* Channel pill stays left-aligned, natural width */
+  .ts-channel-pill {
+    width: fit-content;
+  }
+
+  /* Points row stays inline */
+  .ts-toolbar-group {
+    justify-content: flex-start;
+  }
+
+  /* From / To side-by-side in a 2-col grid */
+  .ts-toolbar-dates {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .date-field {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .date-field input[type="date"] {
+    width: 100%;
+    min-width: unset;
+    box-sizing: border-box;
+  }
+
+  /* All right-side buttons full width & centered */
+  .ts-toolbar-right button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ════════════════════════════════════════
+   MOBILE  (max 480px)
+   ════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .ts-toolbar {
+    padding: 10px;
+    gap: 12px;
+  }
+
+  /* Stack From / To vertically on very small screens */
+  .ts-toolbar-dates {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .ts-toolbar-group label,
+  .date-field label {
+    font-size: 0.8rem;
+  }
+
+  .date-field input[type="date"],
+  .ts-toolbar-group select {
+    font-size: 0.8rem;
+    padding: 5px 10px;
+  }
+}
+
+/* ════════════════════════════════════════
+   CHART ACTION BUTTONS
+   ════════════════════════════════════════ */
+.chart-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-action-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: 0 0 30px;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.chart-action-btn:hover {
+  background: var(--primary-glow);
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: scale(1.1);
+}
+
+/* ════════════════════════════════════════
+   INFO MODAL STYLES
+   ════════════════════════════════════════ */
+.info-modal-content {
+  background: var(--surface-color);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+  width: min(420px, 92vw);
+  display: flex;
+  flex-direction: column;
+  animation: popIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+.info-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--surface-color);
+}
+
+.info-modal-header h2 {
+  margin: 0;
+  font-family: "DM Serif Display", serif;
+  font-size: 1.25rem;
+  color: var(--text-main);
+  border: none;
+  padding: 0;
+}
+
+.info-modal-body {
+  padding: 24px;
+}
+
+.info-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.info-stat-box {
+  background: var(--bg-deep);
+  border: 1px solid var(--border-color);
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.info-stat-box:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary);
+  box-shadow: 0 4px 14px var(--primary-glow);
+}
+
+.info-stat-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.info-stat-value {
+  font-family: "Space Mono", monospace;
+  font-size: 1.4rem;
+  color: var(--primary);
+  font-weight: 700;
 }
