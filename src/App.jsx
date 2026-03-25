@@ -12,8 +12,9 @@ const HTTP_URL = `https://${RENDER_DOMAIN}`;
 const WS_URL = `wss://${RENDER_DOMAIN}`;
 
 export default function App() {
+  // 1. JWT now securely uses sessionStorage (wipes when tab closes)
   const [token, setToken] = useState(
-    localStorage.getItem("smartiq_jwt") || null,
+    sessionStorage.getItem("smartiq_jwt") || null,
   );
   const [devices, setDevices] = useState([]);
   const [activeDevice, setActiveDevice] = useState(null);
@@ -26,14 +27,43 @@ export default function App() {
  
   const ws = useRef(null);
  
-  // FIX: Use a ref to track activeDevice inside the WS onmessage closure.
-  // Without this, onmessage captures a stale value of activeDevice from when
-  // the effect first ran, so switching devices never updated the sensor feed.
   const activeDeviceRef = useRef(activeDevice);
   useEffect(() => {
     activeDeviceRef.current = activeDevice;
+    
+    // 2. Remember the selected device in localStorage so it survives refreshes
+    if (activeDevice) {
+      localStorage.setItem("smartiq_last_device", activeDevice.id);
+    }
   }, [activeDevice]);
  
+  // 3. 30-Minute Inactivity Auto-Logout Logic
+  useEffect(() => {
+    if (!token) return;
+
+    let timeout;
+    const resetTimer = () => {
+      clearTimeout(timeout);
+      // 30 minutes = 30 * 60 * 1000 = 1,800,000 milliseconds
+      timeout = setTimeout(() => {
+        alert("Session expired due to 30 minutes of inactivity. Please log in again.");
+        handleLogout();
+      }, 1800000);
+    };
+
+    // Listeners for any sign of life from the user
+    const events = ['mousemove', 'keydown', 'scroll', 'click'];
+    events.forEach(event => window.addEventListener(event, resetTimer));
+
+    // Start the timer immediately
+    resetTimer();
+
+    return () => {
+      clearTimeout(timeout);
+      events.forEach(event => window.removeEventListener(event, resetTimer));
+    };
+  }, [token]);
+
   const fetchDevices = async () => {
     if (!token) return;
     try {
@@ -43,7 +73,18 @@ export default function App() {
       if (res.status === 401) return handleLogout();
       const data = await res.json();
       setDevices(data);
-      if (data.length > 0 && !activeDevice) setActiveDevice(data[0]);
+      
+      if (data.length > 0) {
+        // 4. On refresh, look for the previously saved device
+        const savedDeviceId = localStorage.getItem("smartiq_last_device");
+        const previousDevice = data.find(d => d.id === savedDeviceId);
+        
+        if (previousDevice) {
+          setActiveDevice(previousDevice);
+        } else if (!activeDevice) {
+          setActiveDevice(data[0]);
+        }
+      }
     } catch (err) {
       console.error("Failed to fetch devices", err);
     }
@@ -76,8 +117,6 @@ export default function App() {
       ws.current.onopen = () => setIsCloudOnline(true);
       ws.current.onmessage = (event) => {
         const message = JSON.parse(event.data);
-        // FIX: Read activeDevice from the ref so we always have the latest
-        // value, even after the user has switched devices.
         if (
           message.type === "sensor_update" &&
           activeDeviceRef.current &&
@@ -94,18 +133,16 @@ export default function App() {
  
     connectWS();
     return () => ws.current?.close();
-    // FIX: Removed activeDevice from the dependency array. Previously, every
-    // device switch caused the WebSocket to disconnect and reconnect
-    // unnecessarily. The ref above handles reading the latest device instead.
   }, [token]);
  
   const handleLogin = (jwt) => {
-    localStorage.setItem("smartiq_jwt", jwt);
+    sessionStorage.setItem("smartiq_jwt", jwt);
     setToken(jwt);
   };
  
   const handleLogout = () => {
-    localStorage.removeItem("smartiq_jwt");
+    sessionStorage.removeItem("smartiq_jwt");
+    localStorage.removeItem("smartiq_last_device"); // Clear device memory on logout
     setToken(null);
     setDevices([]);
     setCustomCrops([]);
@@ -173,6 +210,8 @@ export default function App() {
           httpUrl={HTTP_URL}
           refreshDevices={fetchDevices}
           onLogout={handleLogout}
+          customCrops={customCrops}
+          refreshCrops={fetchCrops}
         />
       )}
     </div>

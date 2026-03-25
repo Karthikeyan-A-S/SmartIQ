@@ -127,6 +127,28 @@ export default function Dashboard({ sensorData, isCloudOnline, sendCommand, cust
  
   return (
     <div className="container">
+      {/* --- ACTIVE ACTION BANNER --- */}
+      {sensorData?.pumpStatus === "ON" && (
+        <div className="active-action-banner">
+          <div className="banner-info">
+            <span className="banner-icon">💦</span>
+            <div>
+              <strong>
+                {sensorData?.systemMode === "AUTO" 
+                  ? "🤖 Auto-Pilot Irrigation Running" 
+                  : "🌊 Manual Irrigation Active"}
+              </strong>
+              <p>The water pump is currently dispensing at {sensorData?.pumpSpeed || 100}% speed.</p>
+            </div>
+          </div>
+          <button 
+            className="btn-danger banner-cancel-btn" 
+            onClick={() => sendCommand("CANCEL")}
+          >
+            ⏹ Cancel Action
+          </button>
+        </div>
+      )}
       {/* 1. Live Conditions */}
       <div className="card">
         <div className="card-header">
