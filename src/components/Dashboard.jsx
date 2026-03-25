@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from "react";
 import AddCropModal from "./AddCropModal";
  
+// FIX: Added the exact speed percentages (15/25/35 for Drip, 70/85/100 for Surface) 
+// to the default plants so they don't break the system!
 const cropData = {
-  tomato: { dripDuration: 45, surfaceQuantity: 4.0, surfaceDuration: 20 },
-  banana: { dripDuration: 90, surfaceQuantity: 12.0, surfaceDuration: 40 },
-  mango: { dripDuration: 120, surfaceQuantity: 25.0, surfaceDuration: 60 },
-  coconut: { dripDuration: 150, surfaceQuantity: 40.0, surfaceDuration: 90 },
+  tomato:  { name: "Tomato", dripDuration: 45, surfaceQuantity: 4.0, surfaceDuration: 20, dripSpeed: 25, surfaceSpeed: 85 },
+  banana:  { name: "Banana", dripDuration: 90, surfaceQuantity: 12.0, surfaceDuration: 40, dripSpeed: 35, surfaceSpeed: 100 },
+  mango:   { name: "Mango", dripDuration: 120, surfaceQuantity: 25.0, surfaceDuration: 60, dripSpeed: 25, surfaceSpeed: 85 },
+  coconut: { name: "Coconut", dripDuration: 150, surfaceQuantity: 40.0, surfaceDuration: 90, dripSpeed: 35, surfaceSpeed: 100 },
 };
  
-// FIX: Moved CropDropdownOptions outside the parent component.
-// Defining it inside caused React to treat it as a brand-new component type on
-// every render, triggering unnecessary unmount/remount of the <select> options.
 function CropDropdownOptions({ customCrops }) {
   return (
     <>
@@ -57,6 +56,16 @@ export default function Dashboard({ sensorData, isCloudOnline, sendCommand, cust
  
   const [showCropModal, setShowCropModal] = useState(false);
  
+  // --- HELPER FUNCTION: Safely get crop data whether it's custom or default ---
+  const getSelectedCropData = (cropId) => {
+    if (cropId === "none") return null;
+    if (cropId.startsWith("custom_")) {
+      const id = cropId.replace("custom_", "");
+      return customCrops.find((c) => c._id === id);
+    }
+    return cropData[cropId];
+  };
+
   const getSalinityInfo = (ec) => {
     if (ec === null) return null;
     if (ec < 1.5) return { level: "normal", label: "✅ Normal", cls: "sal-normal", factor: 1.0, dripAdj: 0 };
@@ -73,14 +82,7 @@ export default function Dashboard({ sensorData, isCloudOnline, sendCommand, cust
  
   useEffect(() => {
     if (plantDataset === "none") return;
- 
-    let data;
-    if (plantDataset.startsWith("custom_")) {
-      const cropId = plantDataset.replace("custom_", "");
-      data = customCrops.find((c) => c._id === cropId);
-    } else {
-      data = cropData[plantDataset];
-    }
+    const data = getSelectedCropData(plantDataset);
  
     if (data) {
       if (manualMode === "drip") {
@@ -92,32 +94,75 @@ export default function Dashboard({ sensorData, isCloudOnline, sendCommand, cust
     }
   }, [plantDataset, manualMode, surfaceControl, customCrops]);
  
-  const handleAutoSubmit = (e) => {
+  // // FIX: Added treeSpeed injection to AUTO command
+  // const handleAutoSubmit = (e) => {
+  //   e.preventDefault();
+  //   if (autoPlantType === "none") return alert("Please select a plant type.");
+    
+  //   const cropDataObj = getSelectedCropData(autoPlantType);
+  //   const targetSpeed = autoMethod === "drip" ? cropDataObj?.dripSpeed : cropDataObj?.surfaceSpeed;
+  //   const fallbackSpeed = autoMethod === "drip" ? 25 : 85;
+
+  //   sendCommand("AUTO", { 
+  //     treeType: cropDataObj ? cropDataObj.name : autoPlantType, 
+  //     irrigationMethod: autoMethod, 
+  //     salinity: currentSalinity,
+  //     treeSpeed: targetSpeed || fallbackSpeed
+  //   });
+  // };
+ const handleAutoSubmit = (e) => {
     e.preventDefault();
-    if (autoPlantType === "none") return alert("Please select a plant type.");
-    sendCommand("AUTO", { treeType: autoPlantType, irrigationMethod: autoMethod, salinity: currentSalinity });
+    
+    // 1. Check if a specific plant is selected
+    const cropDataObj = getSelectedCropData(autoPlantType);
+    
+    // 2. If selected, use its exact speed. If "none", send 0 to trigger Smart Weather Mode
+    let targetSpeed = 0; 
+    let displayName = "🧠 Smart Weather AI";
+
+    if (cropDataObj) {
+      targetSpeed = autoMethod === "drip" ? cropDataObj.dripSpeed : cropDataObj.surfaceSpeed;
+      displayName = cropDataObj.name;
+    }
+
+    // 3. Send the payload
+    sendCommand("AUTO", { 
+      treeType: displayName, 
+      irrigationMethod: autoMethod, 
+      salinity: currentSalinity,
+      treeSpeed: targetSpeed 
+    });
   };
- 
+  // FIX: Added speed injection to MANUAL DRIP command
   const handleDripSubmit = (e) => {
     e.preventDefault();
-    // FIX: Input values from <input type="number"> are strings — convert to
-    // Number before sending so the Pi receives numeric types, not "30".
+    const cropDataObj = getSelectedCropData(plantDataset);
+    const targetSpeed = cropDataObj?.dripSpeed || 25; // Default 25 if no plant selected
+
     sendCommand("DRIP", {
       startTime: dripStartNow ? "NOW" : dripStartTime,
       duration: Number(dripDuration),
       salinity: currentSalinity,
+      speed: targetSpeed
     });
   };
  
+  // FIX: Added speed injection to MANUAL SURFACE command
   const handleSurfaceSubmit = (e) => {
     e.preventDefault();
-    let payload = { controlType: surfaceControl, salinity: currentSalinity };
+    const cropDataObj = getSelectedCropData(plantDataset);
+    const targetSpeed = cropDataObj?.surfaceSpeed || 85; // Default 85 if no plant selected
+
+    let payload = { 
+      controlType: surfaceControl, 
+      salinity: currentSalinity,
+      speed: targetSpeed 
+    };
+    
     if (surfaceControl === "volume") {
-      // FIX: Same string-to-number conversion for surface quantity
       payload.quantity = Number(surfaceQuantity);
     } else {
       payload.startTime = surfaceStartNow ? "NOW" : surfaceStartTime;
-      // FIX: Same string-to-number conversion for surface duration
       payload.duration = Number(surfaceDuration);
     }
     sendCommand("SURFACE", payload);
@@ -149,6 +194,7 @@ export default function Dashboard({ sensorData, isCloudOnline, sendCommand, cust
           </button>
         </div>
       )}
+      
       {/* 1. Live Conditions */}
       <div className="card">
         <div className="card-header">
