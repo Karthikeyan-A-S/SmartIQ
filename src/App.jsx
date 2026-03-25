@@ -9,7 +9,7 @@ import "./style.css";
  
 const RENDER_DOMAIN = "smartiq-backend.onrender.com";
 const HTTP_URL = `https://${RENDER_DOMAIN}`;
-const WS_URL = `ws://${RENDER_DOMAIN}`;
+const WS_URL = `wss://${RENDER_DOMAIN}`;
 
 export default function App() {
   const [token, setToken] = useState(
